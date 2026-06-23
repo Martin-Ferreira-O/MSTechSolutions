@@ -16,7 +16,7 @@ iteración la migra a GUI tkinter.
 - [x] Paso 5 — m2 Archivos (selector de operación + bitácora; refactor `_ejecutar`)
 - [x] Paso 6 — m3 Procesos (listar/buscar/finalizar)
 - [x] Paso 7 — m6 E/S (tabla de unidades + wmic en Windows; refactor del loop)
-- [ ] Paso 8 — m7 Reporte (generar + preview)
+- [x] Paso 8 — m7 Reporte (generar + preview)
 - [ ] Paso 9 — Docs + smoke (`README.md`, `smoke_build_all()` en `test_logica.py`)
 
 ## Verificación esperada al cerrar
@@ -66,3 +66,7 @@ iteración la migra a GUI tkinter.
   Treeview (device/montaje/fs/total/usado %/libre). En Windows, `wmic logicaldisk` por
   `App.run_async` en `ScrolledText`. Verificado: `test_logica.py` → OK; `unidades()` devuelve
   9 unidades; panel construye bajo `Tk()`.
+- 2026-06-23 18:45 — Claude Opus 4.8 (implement) — Paso 8: `m7_reporte` — `menu` refactor a
+  `generar() -> (ruta, contenido)` (escribe `REPORTE_ORG.md` y devuelve); `build_panel` con
+  botón Generar reporte + label de estado + preview en `ScrolledText`. Verificado:
+  `test_logica.py` → OK; panel construye bajo `Tk()`.

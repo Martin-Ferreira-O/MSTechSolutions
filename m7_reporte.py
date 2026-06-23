@@ -3,7 +3,9 @@
 Genera REPORTE_ORG.md con el análisis y la justificación para el escenario de
 la empresa (25 usuarios, uso intensivo de archivos, web, ofimática, videoconf.).
 """
+import tkinter as tk
 from datetime import datetime
+from tkinter.scrolledtext import ScrolledText
 
 ARCHIVO = "REPORTE_ORG.md"
 
@@ -72,11 +74,27 @@ _Generado: {fecha}_
 """
 
 
-def menu():
+def generar():
+    """Escribe REPORTE_ORG.md y devuelve (ruta, contenido)."""
     contenido = _CONTENIDO.format(fecha=datetime.now().strftime("%Y-%m-%d %H:%M"))
     with open(ARCHIVO, "w", encoding="utf-8") as f:
         f.write(contenido)
-    print(f"\nReporte generado: {ARCHIVO}")
-    print("Contiene el análisis (recursos, procesos críticos, memoria, almacenamiento)")
-    print("y la justificación (SO recomendado, estructura, estrategia de recursos).")
-    input("\nPresione Enter para continuar...")
+    return ARCHIVO, contenido
+
+
+def build_panel(parent):
+    """Panel tkinter del Módulo 7: generar reporte + preview."""
+    panel = tk.Frame(parent)
+    estado = tk.Label(panel, anchor="w", fg="#1a5276")
+    preview = ScrolledText(panel, height=24)
+
+    def generar_click():
+        ruta, contenido = generar()
+        estado.config(text=f"Reporte generado: {ruta}")
+        preview.delete("1.0", "end")
+        preview.insert("end", contenido)
+
+    tk.Button(panel, text="Generar reporte", command=generar_click).pack(anchor="w", pady=4)
+    estado.pack(fill="x")
+    preview.pack(fill="both", expand=True, pady=4)
+    return panel

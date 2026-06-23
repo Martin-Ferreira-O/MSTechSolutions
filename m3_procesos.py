@@ -3,15 +3,16 @@
 Usa los comandos MS-DOS: tasklist (consultar/buscar) y taskkill (finalizar).
 """
 import tkinter as tk
-from tkinter.scrolledtext import ScrolledText
 
 import util
+
+_PS_FMT = "ps -A -o user,pid,%cpu,%mem,stat,time,comm"
 
 
 def listar():
     """Lista todos los procesos activos. Devuelve texto."""
     if util.es_macos():
-        _, salida = util.run_shell("ps aux")
+        _, salida = util.run_shell(_PS_FMT)
     else:
         _, salida = util.run_dos("tasklist")
     return salida
@@ -20,7 +21,7 @@ def listar():
 def buscar(nombre):
     """Busca procesos por nombre. Devuelve texto."""
     if util.es_macos():
-        _, salida = util.run_shell(f"ps aux | grep -i '{nombre}' | grep -v grep")
+        _, salida = util.run_shell(f"{_PS_FMT} | grep -i '{nombre}' | grep -v grep")
         if not salida:
             salida = "No se encontraron procesos."
         return salida
@@ -68,8 +69,17 @@ def build_panel(parent):
     tk.Button(barra2, text="Finalizar",
               command=lambda: _finalizar(panel, salida, e_fin)).pack(side="left", padx=4)
 
-    salida = ScrolledText(panel, height=18)
-    salida.pack(fill="both", expand=True, pady=4)
+    frame_s = tk.Frame(panel)
+    frame_s.pack(fill="both", expand=True, pady=4)
+    xscroll = tk.Scrollbar(frame_s, orient="horizontal")
+    yscroll = tk.Scrollbar(frame_s, orient="vertical")
+    salida = tk.Text(frame_s, height=18, wrap="none", font=("Courier", 10),
+                     xscrollcommand=xscroll.set, yscrollcommand=yscroll.set)
+    xscroll.config(command=salida.xview)
+    yscroll.config(command=salida.yview)
+    yscroll.pack(side="right", fill="y")
+    xscroll.pack(side="bottom", fill="x")
+    salida.pack(fill="both", expand=True)
     return panel
 
 

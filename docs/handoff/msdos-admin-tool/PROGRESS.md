@@ -15,7 +15,7 @@ iteración la migra a GUI tkinter.
 - [x] Paso 4 — m1 Sistema (panel async + resumen; guard Windows)
 - [x] Paso 5 — m2 Archivos (selector de operación + bitácora; refactor `_ejecutar`)
 - [x] Paso 6 — m3 Procesos (listar/buscar/finalizar)
-- [ ] Paso 7 — m6 E/S (tabla de unidades + wmic en Windows; refactor del loop)
+- [x] Paso 7 — m6 E/S (tabla de unidades + wmic en Windows; refactor del loop)
 - [ ] Paso 8 — m7 Reporte (generar + preview)
 - [ ] Paso 9 — Docs + smoke (`README.md`, `smoke_build_all()` en `test_logica.py`)
 
@@ -61,3 +61,8 @@ iteración la migra a GUI tkinter.
   entry+Finalizar → `ScrolledText`. Listar/Buscar (tasklist lento) van por `App.run_async`;
   finalizar (taskkill) es directo. Verificado: `test_logica.py` → OK; Listar async ejecutado
   bajo `App` real sin excepción.
+- 2026-06-23 18:42 — Claude Opus 4.8 (implement) — Paso 7: `m6_es` — loop de print extraído a
+  `unidades()` (devuelve lista de dicts desde psutil); `build_panel` con botón Actualizar →
+  Treeview (device/montaje/fs/total/usado %/libre). En Windows, `wmic logicaldisk` por
+  `App.run_async` en `ScrolledText`. Verificado: `test_logica.py` → OK; `unidades()` devuelve
+  9 unidades; panel construye bajo `Tk()`.

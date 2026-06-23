@@ -105,6 +105,22 @@ class App(tk.Tk):
         threading.Thread(target=worker, daemon=True).start()
 
 
+def smoke_build_all():
+    """Construye los 7 paneles bajo una App oculta y la destruye (requiere display).
+
+    Verifica el wiring de cada `build_panel` sin abrir la ventana. No entra en el
+    gate automático (`.verify`) porque necesita display.
+    """
+    app = App()
+    app.withdraw()
+    try:
+        for num, _, _ in MODULOS:
+            app.mostrar(num)  # crea (y cachea) el panel del módulo
+        app.update()
+    finally:
+        app.destroy()
+
+
 def main():
     App().mainloop()
 

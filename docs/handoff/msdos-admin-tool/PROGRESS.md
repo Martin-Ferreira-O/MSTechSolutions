@@ -5,8 +5,8 @@
 
 # PROGRESS — msdos-admin-tool (migración a menú GUI tkinter)
 
-**Estado: en progreso.** La versión consola está commiteada (`c3f1708`); esta
-iteración la migra a GUI tkinter.
+**Estado: implementado.** Los 9 pasos del PLAN están completos y verificados; la
+versión consola (`c3f1708`) quedó migrada a GUI tkinter.
 
 ## Checklist (espejo de los 9 pasos del PLAN)
 - [x] Paso 1 — Shell `App(tk.Tk)` en `main.py` (nav 1–7 + Salir, contenido, `run_async`, carga perezosa)
@@ -17,7 +17,7 @@ iteración la migra a GUI tkinter.
 - [x] Paso 6 — m3 Procesos (listar/buscar/finalizar)
 - [x] Paso 7 — m6 E/S (tabla de unidades + wmic en Windows; refactor del loop)
 - [x] Paso 8 — m7 Reporte (generar + preview)
-- [ ] Paso 9 — Docs + smoke (`README.md`, `smoke_build_all()` en `test_logica.py`)
+- [x] Paso 9 — Docs + smoke (`README.md`, `smoke_build_all()` en `test_logica.py`)
 
 ## Verificación esperada al cerrar
 - `python3 test_logica.py` → `OK` (lógica pura intacta).
@@ -70,3 +70,9 @@ iteración la migra a GUI tkinter.
   `generar() -> (ruta, contenido)` (escribe `REPORTE_ORG.md` y devuelve); `build_panel` con
   botón Generar reporte + label de estado + preview en `ScrolledText`. Verificado:
   `test_logica.py` → OK; panel construye bajo `Tk()`.
+- 2026-06-23 18:48 — Claude Opus 4.8 (implement) — Paso 9: `smoke_build_all()` en `main.py`
+  (construye los 7 paneles bajo una `App` oculta y la destruye) expuesto también vía
+  `test_logica.smoke_build_all` con flag `--smoke` (default sigue headless). `README.md`
+  actualizado a GUI tkinter. Verificado: `python3 test_logica.py` → OK (gate headless);
+  `python3 -c "import main; main.smoke_build_all(); print('OK')"` → OK; `test_logica.py
+  --smoke` → OK. Lógica pura intacta.

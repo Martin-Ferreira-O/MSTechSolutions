@@ -1,9 +1,19 @@
 """Pruebas de la lógica pura (Módulos 4 y 5). Corre en cualquier SO.
 
-Ejecutar:  python test_logica.py   ->  imprime OK y sale 0 si todo pasa.
+Ejecutar:  python test_logica.py            -> lógica pura; imprime OK (headless).
+           python test_logica.py --smoke     -> además construye los 7 paneles GUI
+                                                (requiere display).
 """
+import sys
+
 import m4_cpu
 import m5_memoria
+
+
+def smoke_build_all():
+    """Construye los 7 paneles tkinter (requiere display). Delegado a main."""
+    import main
+    main.smoke_build_all()
 
 PROCESOS = [("P1", 5), ("P2", 3), ("P3", 7)]
 
@@ -65,4 +75,7 @@ if __name__ == "__main__":
         if nombre.startswith("test_") and callable(fn):
             fn()
             print(f"  {nombre} ... ok")
+    if "--smoke" in sys.argv:
+        smoke_build_all()
+        print("  smoke_build_all ... ok")
     print("OK")

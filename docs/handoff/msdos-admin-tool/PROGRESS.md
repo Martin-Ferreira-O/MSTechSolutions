@@ -10,7 +10,7 @@ iteración la migra a GUI tkinter.
 
 ## Checklist (espejo de los 9 pasos del PLAN)
 - [x] Paso 1 — Shell `App(tk.Tk)` en `main.py` (nav 1–7 + Salir, contenido, `run_async`, carga perezosa)
-- [ ] Paso 2 — m4 CPU `build_panel` (tabla procesos + cálculo + resultados)
+- [x] Paso 2 — m4 CPU `build_panel` (tabla procesos + cálculo + resultados)
 - [ ] Paso 3 — m5 Memoria (memoria real + fijas/variables + tablas; refactor `mostrar_memoria_real`)
 - [ ] Paso 4 — m1 Sistema (panel async + resumen; guard Windows)
 - [ ] Paso 5 — m2 Archivos (selector de operación + bitácora; refactor `_ejecutar`)
@@ -33,3 +33,9 @@ iteración la migra a GUI tkinter.
   paneles, banner Windows-only para 1/2/3 y helper único de concurrencia `App.run_async`
   (Thread + `after`). Módulos sin `build_panel` muestran "🚧 En construcción". Verificado:
   `test_logica.py` → OK; `App()` construye/destruye sin excepción.
+- 2026-06-23 18:24 — Claude Opus 4.8 (implement) — Paso 2: `m4_cpu.build_panel` — alta de
+  procesos (entry nombre+CPU → Treeview, quitar seleccionado), entry de quantum y botón
+  Calcular que reusa `fcfs/sjf/round_robin/comparar` y muestra 3 tablas Treeview con
+  promedios + línea de mejor algoritmo + bloque VENTAJAS. Removidos `_pedir_procesos/
+  _imprimir/menu`; lógica pura intacta. Verificado: `test_logica.py` → OK; panel
+  construye bajo `Tk()`.

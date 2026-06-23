@@ -5,7 +5,9 @@ Round Robin con quantum configurable. Cada función recibe una lista de
 procesos `[(nombre, tiempo_cpu), ...]` (orden = orden de llegada, llegada en t=0)
 y devuelve un dict con orden de ejecución, espera/retorno por proceso y promedios.
 """
+import tkinter as tk
 from collections import deque
+from tkinter import ttk
 
 VENTAJAS = {
     "FCFS": ("Simple y justo por orden de llegada; sin inanición.",
@@ -81,62 +83,111 @@ def comparar(resultados):
     return min(resultados, key=lambda r: r["prom_espera"])
 
 
-def _imprimir(res):
-    print(f"\n=== {res['algoritmo']} ===")
-    print("Orden de ejecución:", " -> ".join(res["orden"]))
-    print(f"{'Proceso':<10}{'CPU':>6}{'Espera':>8}{'Retorno':>9}")
+def _tabla_resultado(parent, res):
+    """Crea un LabelFrame con la tabla de un algoritmo (orden, filas, promedios)."""
+    lf = tk.LabelFrame(parent, text=res["algoritmo"])
+    tk.Label(lf, anchor="w", text="Orden: " + " → ".join(res["orden"])).pack(
+        fill="x", padx=4, pady=(2, 0))
+    tv = ttk.Treeview(lf, columns=("p", "cpu", "esp", "ret"), show="headings", height=4)
+    for col, txt, w in (("p", "Proceso", 90), ("cpu", "CPU", 50),
+                        ("esp", "Espera", 60), ("ret", "Retorno", 60)):
+        tv.heading(col, text=txt)
+        tv.column(col, width=w, anchor="center")
     for f in res["filas"]:
-        print(f"{f['nombre']:<10}{f['burst']:>6}{f['espera']:>8}{f['retorno']:>9}")
-    print(f"Espera promedio : {res['prom_espera']:.2f}")
-    print(f"Retorno promedio: {res['prom_retorno']:.2f}")
+        tv.insert("", "end", values=(f["nombre"], f["burst"], f["espera"], f["retorno"]))
+    tv.pack(fill="x", padx=4, pady=2)
+    tk.Label(lf, anchor="w",
+             text=f"Espera promedio: {res['prom_espera']:.2f}   "
+                  f"Retorno promedio: {res['prom_retorno']:.2f}").pack(fill="x", padx=4, pady=(0, 2))
+    return lf
 
 
-def _pedir_procesos():
-    procesos = []
-    print("Ingrese procesos (nombre y tiempo de CPU). Enter en el nombre para terminar.")
-    i = 1
-    while True:
-        nombre = input(f"  Nombre del proceso {i} (Enter para terminar): ").strip()
+def build_panel(parent):
+    """Panel tkinter del Módulo 4: alta de procesos + cálculo de los 3 algoritmos."""
+    panel = tk.Frame(parent)
+
+    alta = tk.LabelFrame(panel, text="Procesos (nombre + tiempo de CPU)")
+    alta.pack(fill="x", pady=4)
+    tk.Label(alta, text="Nombre:").grid(row=0, column=0, padx=4, pady=4)
+    e_nombre = tk.Entry(alta, width=12)
+    e_nombre.grid(row=0, column=1, padx=4)
+    tk.Label(alta, text="CPU:").grid(row=0, column=2, padx=4)
+    e_cpu = tk.Entry(alta, width=6)
+    e_cpu.grid(row=0, column=3, padx=4)
+
+    tv_proc = ttk.Treeview(alta, columns=("nombre", "cpu"), show="headings", height=5)
+    tv_proc.heading("nombre", text="Proceso")
+    tv_proc.heading("cpu", text="CPU")
+    tv_proc.column("nombre", width=140)
+    tv_proc.column("cpu", width=60, anchor="center")
+    tv_proc.grid(row=1, column=0, columnspan=5, padx=4, pady=4, sticky="we")
+
+    msg = tk.Label(panel, fg="red", anchor="w")
+
+    def agregar(_evt=None):
+        nombre = e_nombre.get().strip()
+        cpu = e_cpu.get().strip()
         if not nombre:
-            break
-        try:
-            burst = int(input(f"  Tiempo de CPU de {nombre}: ").strip())
-            if burst <= 0:
-                print("  El tiempo debe ser un entero positivo.")
-                continue
-        except ValueError:
-            print("  Valor inválido, ingrese un número entero.")
-            continue
-        procesos.append((nombre, burst))
-        i += 1
-    return procesos
+            msg.config(text="Ingrese un nombre de proceso.")
+            return
+        if not cpu.isdigit() or int(cpu) <= 0:
+            msg.config(text="El tiempo de CPU debe ser un entero positivo.")
+            return
+        tv_proc.insert("", "end", values=(nombre, int(cpu)))
+        e_nombre.delete(0, "end")
+        e_cpu.delete(0, "end")
+        e_nombre.focus_set()
+        msg.config(text="")
 
+    def quitar():
+        for it in tv_proc.selection():
+            tv_proc.delete(it)
 
-def menu():
-    print("\n--- Módulo 4: Planificación de CPU ---")
-    procesos = _pedir_procesos()
-    if not procesos:
-        print("No se ingresaron procesos.")
-        return
-    try:
-        quantum = int(input("Quantum para Round Robin: ").strip())
-        if quantum <= 0:
-            raise ValueError
-    except ValueError:
-        print("Quantum inválido, se usa 2 por defecto.")
-        quantum = 2
+    e_cpu.bind("<Return>", agregar)
+    tk.Button(alta, text="Agregar", command=agregar).grid(row=0, column=4, padx=4)
+    tk.Button(alta, text="Quitar seleccionado", command=quitar).grid(
+        row=2, column=0, columnspan=5, pady=(0, 4))
 
-    resultados = [fcfs(procesos), sjf(procesos), round_robin(procesos, quantum)]
-    for r in resultados:
-        _imprimir(r)
+    qf = tk.Frame(panel)
+    qf.pack(fill="x", pady=4)
+    tk.Label(qf, text="Quantum (Round Robin):").pack(side="left", padx=4)
+    e_q = tk.Entry(qf, width=6)
+    e_q.insert(0, "2")
+    e_q.pack(side="left")
 
-    mejor = comparar(resultados)
-    print("\n========== COMPARACIÓN ==========")
-    print(f"Mejor rendimiento (menor espera promedio): {mejor['algoritmo']} "
-          f"({mejor['prom_espera']:.2f})")
-    print("\nVentajas y desventajas:")
-    for alg, (ventaja, desventaja) in VENTAJAS.items():
-        print(f"  - {alg}:")
-        print(f"      (+) {ventaja}")
-        print(f"      (-) {desventaja}")
-    input("\nPresione Enter para continuar...")
+    msg.pack(fill="x")
+    res_cont = tk.Frame(panel)
+    res_cont.pack(fill="both", expand=True, pady=4)
+
+    def calcular():
+        procesos = [(tv_proc.set(it, "nombre"), int(tv_proc.set(it, "cpu")))
+                    for it in tv_proc.get_children()]
+        if not procesos:
+            msg.config(text="Agregue al menos un proceso.")
+            return
+        q = e_q.get().strip()
+        if not q.isdigit() or int(q) <= 0:
+            msg.config(text="Quantum inválido: use un entero positivo.")
+            return
+        msg.config(text="")
+        for hijo in res_cont.winfo_children():
+            hijo.destroy()
+
+        resultados = [fcfs(procesos), sjf(procesos), round_robin(procesos, int(q))]
+        for r in resultados:
+            _tabla_resultado(res_cont, r).pack(fill="x", pady=2)
+
+        mejor = comparar(resultados)
+        tk.Label(res_cont, anchor="w", fg="#1a5276",
+                 font=("TkDefaultFont", 11, "bold"),
+                 text=f"Mejor rendimiento (menor espera promedio): "
+                      f"{mejor['algoritmo']} ({mejor['prom_espera']:.2f})").pack(fill="x", pady=(6, 2))
+        ventajas = tk.LabelFrame(res_cont, text="Ventajas y desventajas")
+        ventajas.pack(fill="x", pady=2)
+        for alg, (ventaja, desventaja) in VENTAJAS.items():
+            tk.Label(ventajas, anchor="w", justify="left", wraplength=760,
+                     text=f"{alg}:\n   (+) {ventaja}\n   (-) {desventaja}").pack(
+                fill="x", padx=4, pady=2)
+
+    tk.Button(qf, text="Calcular", command=calcular).pack(side="left", padx=8)
+    return panel

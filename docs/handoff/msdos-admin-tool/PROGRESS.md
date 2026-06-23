@@ -12,7 +12,7 @@ iteración la migra a GUI tkinter.
 - [x] Paso 1 — Shell `App(tk.Tk)` en `main.py` (nav 1–7 + Salir, contenido, `run_async`, carga perezosa)
 - [x] Paso 2 — m4 CPU `build_panel` (tabla procesos + cálculo + resultados)
 - [x] Paso 3 — m5 Memoria (memoria real + fijas/variables + tablas; refactor `mostrar_memoria_real`)
-- [ ] Paso 4 — m1 Sistema (panel async + resumen; guard Windows)
+- [x] Paso 4 — m1 Sistema (panel async + resumen; guard Windows)
 - [ ] Paso 5 — m2 Archivos (selector de operación + bitácora; refactor `_ejecutar`)
 - [ ] Paso 6 — m3 Procesos (listar/buscar/finalizar)
 - [ ] Paso 7 — m6 E/S (tabla de unidades + wmic en Windows; refactor del loop)
@@ -45,3 +45,8 @@ iteración la migra a GUI tkinter.
   con "Cargar ejemplo" (datos `_DEMO_*`) y resultados en Treeview + resumen de fragmentación.
   Helpers de parseo `_parse_tam/_parse_procs`. Pure `particiones_fijas/variables` intactas.
   Verificado: `test_logica.py` → OK; parse helpers OK; panel construye bajo `Tk()`.
+- 2026-06-23 18:32 — Claude Opus 4.8 (implement) — Paso 4: `m1_sistema.build_panel` — botón
+  Consultar que dispara `ver/hostname/whoami/systeminfo` vía `App.run_async` (no congela la
+  UI), resumen en grid de labels (reusa `_parse_systeminfo`) + salida cruda en `ScrolledText`.
+  Guard Windows lo aporta el shell (banner). Verificado: `test_logica.py` → OK; panel
+  construye; wiring async ejecutado bajo `App` real sin excepción.

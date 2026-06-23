@@ -76,3 +76,8 @@ versión consola (`c3f1708`) quedó migrada a GUI tkinter.
   actualizado a GUI tkinter. Verificado: `python3 test_logica.py` → OK (gate headless);
   `python3 -c "import main; main.smoke_build_all(); print('OK')"` → OK; `test_logica.py
   --smoke` → OK. Lógica pura intacta.
+- 2026-06-23 18:34 — Claude Opus 4.8 (implement) — review (fresh) against PLAN: pass (0 gaps).
+  Subagent Opus 4.8 (medium, ruteado por dificultad 6/10) con contexto limpio (solo diff +
+  PLAN.md): confirma contrato `build_panel` en m1–m7, lógica pura sin tocar, shell con nav/
+  carga perezosa/`run_async` único, guard Windows, llamadas lentas async, sin deps nuevas;
+  ambas Verification commands pasan.

@@ -13,7 +13,7 @@ iteración la migra a GUI tkinter.
 - [x] Paso 2 — m4 CPU `build_panel` (tabla procesos + cálculo + resultados)
 - [x] Paso 3 — m5 Memoria (memoria real + fijas/variables + tablas; refactor `mostrar_memoria_real`)
 - [x] Paso 4 — m1 Sistema (panel async + resumen; guard Windows)
-- [ ] Paso 5 — m2 Archivos (selector de operación + bitácora; refactor `_ejecutar`)
+- [x] Paso 5 — m2 Archivos (selector de operación + bitácora; refactor `_ejecutar`)
 - [ ] Paso 6 — m3 Procesos (listar/buscar/finalizar)
 - [ ] Paso 7 — m6 E/S (tabla de unidades + wmic en Windows; refactor del loop)
 - [ ] Paso 8 — m7 Reporte (generar + preview)
@@ -50,3 +50,9 @@ iteración la migra a GUI tkinter.
   UI), resumen en grid de labels (reusa `_parse_systeminfo`) + salida cruda en `ScrolledText`.
   Guard Windows lo aporta el shell (banner). Verificado: `test_logica.py` → OK; panel
   construye; wiring async ejecutado bajo `App` real sin excepción.
+- 2026-06-23 18:36 — Claude Opus 4.8 (implement) — Paso 5: `m2_archivos` — `_ejecutar`
+  refactorizado a `ejecutar(operacion, comando) -> (ok, salida)` (sigue logueando bitácora);
+  `build_panel` con Combobox de las 8 operaciones, campos Ruta/Origen + Destino (este último
+  se deshabilita salvo copy/move/rename), botón Ejecutar y salida acumulada en `ScrolledText`.
+  Verificado: `test_logica.py` → OK; panel construye; `ejecutar` devuelve tupla y escribe
+  bitácora (artefacto limpiado).

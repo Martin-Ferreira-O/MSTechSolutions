@@ -6,4 +6,4 @@ Un handoff por slug. Se actualiza la fila existente, no se duplica.
 
 | slug | status | depends-on | fecha | nota |
 |------|--------|------------|-------|------|
-| msdos-admin-tool | in-progress | — | 2026-06-23 | Implementado y verificado en macOS; falta smoke en Windows de comandos DOS |
+| msdos-admin-tool | in-progress | — | 2026-06-23 | Migración del menú de consola a GUI tkinter — shell + paneles en curso |

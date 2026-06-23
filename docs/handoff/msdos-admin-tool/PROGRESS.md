@@ -1,36 +1,35 @@
-> Handoff doc for task `msdos-admin-tool`. Author: Claude Opus 4.8. Updated: 2026-06-23 18:06.
+> Handoff doc for task `msdos-admin-tool`. Author: Claude Opus 4.8. Updated: 2026-06-23 18:11.
 > IMPLEMENTING AGENT: read CONTEXT.md → PLAN.md → PROGRESS.md → DECISIONS.md before starting.
 > Update PROGRESS.md after every meaningful change, and record any deviation from PLAN.md in DECISIONS.md.
-> Spec written by Claude Opus 4.8 against working tree (pre-initial-commit) on branch `msdos-admin-tool`; source plan: `~/.claude/plans/contexto-del-caso-la-cozy-valiant.md`. If HEAD has moved far past this, reconcile before trusting the spec.
+> Spec written by Claude Opus 4.8 against commit `c3f1708` on branch `msdos-admin-tool`; source plan: `~/.claude/plans/revisa-la-estructura-de-proud-candy.md`. If HEAD has moved far past this, reconcile before trusting the spec.
 
-# PROGRESS — msdos-admin-tool
+# PROGRESS — msdos-admin-tool (migración a menú GUI tkinter)
 
-**Estado: implementado y verificado en macOS.** Pendiente solo el smoke manual en Windows
-de las opciones que usan comandos MS-DOS (1/2/3 y el `wmic` de 6).
+**Estado: en progreso.** La versión consola está commiteada (`c3f1708`); esta
+iteración la migra a GUI tkinter.
 
-## Checklist
-- [x] Paso 1 — `util.py` (run_dos, es_windows, log_bitacora, gb)
-- [x] Paso 2 — `main.py` (menú, dispatch, manejo de errores, SOLO_WINDOWS)
-- [x] Paso 3 — `m1_sistema.py`
-- [x] Paso 4 — `m2_archivos.py` (con bitácora)
-- [x] Paso 5 — `m3_procesos.py`
-- [x] Paso 6 — `m4_cpu.py` (FCFS/SJF/RR + comparar)
-- [x] Paso 7 — `m5_memoria.py` (memoria real + particiones fijas/variables)
-- [x] Paso 8 — `m6_es.py`
-- [x] Paso 9 — `m7_reporte.py`
-- [x] Paso 10 — `test_logica.py` + `INFORME.md` + `README.md` + `requirements.txt`
+## Checklist (espejo de los 9 pasos del PLAN)
+- [x] Paso 1 — Shell `App(tk.Tk)` en `main.py` (nav 1–7 + Salir, contenido, `run_async`, carga perezosa)
+- [ ] Paso 2 — m4 CPU `build_panel` (tabla procesos + cálculo + resultados)
+- [ ] Paso 3 — m5 Memoria (memoria real + fijas/variables + tablas; refactor `mostrar_memoria_real`)
+- [ ] Paso 4 — m1 Sistema (panel async + resumen; guard Windows)
+- [ ] Paso 5 — m2 Archivos (selector de operación + bitácora; refactor `_ejecutar`)
+- [ ] Paso 6 — m3 Procesos (listar/buscar/finalizar)
+- [ ] Paso 7 — m6 E/S (tabla de unidades + wmic en Windows; refactor del loop)
+- [ ] Paso 8 — m7 Reporte (generar + preview)
+- [ ] Paso 9 — Docs + smoke (`README.md`, `smoke_build_all()` en `test_logica.py`)
 
-## Verificado
-- `python test_logica.py` → `OK` (6 asserts: FCFS 4.33, SJF 3.67 mejor, RR 6.33, frag fija 376KB, frag externa>0).
-- macOS smoke: menú; opción 4 (CPU, números correctos), 5 (memoria + particiones), 6 (discos psutil),
-  7 (genera REPORTE_ORG.md); opciones 1/2/3 muestran el aviso "requiere Windows".
-- `util.log_bitacora` escribe el formato `fecha · hora · usuario · operación · resultado`.
-
-## Pendiente (solo Windows, no testeable en macOS)
-- [ ] Smoke de opciones 1/2/3: `ver`, `systeminfo`, `hostname`, `whoami`, `tasklist`, `taskkill`,
-      mkdir/rmdir/copy/move/rename/del, y el end-to-end de `bitacora.txt`.
-- [ ] `wmic logicaldisk` de la opción 6 en Windows.
+## Verificación esperada al cerrar
+- `python3 test_logica.py` → `OK` (lógica pura intacta).
+- `python3 -c "import main; main.smoke_build_all(); print('OK')"` → `OK` (con display).
+- `python3 main.py` → ventana; CPU/Memoria muestran sus tablas (end-to-end manual del PLAN).
 
 ## Work log
-- 2026-06-23 18:03 — Claude Opus 4.8 — implementados los 10 pasos; `test_logica.py` pasa; smoke macOS OK de 4/5/6/7 y avisos de 1/2/3; INFORME/README escritos.
-- 2026-06-23 18:06 — Claude Opus 4.8 — git init + rama `msdos-admin-tool`; materializado el paquete handoff.
+- 2026-06-23 18:11 — Claude Opus 4.8 — /plan: re-planificado el slug para migrar el menú de
+  consola a GUI tkinter (tkinter + rediseño completo por módulo, decidido con el usuario);
+  paquete handoff actualizado. Implementación pendiente.
+- 2026-06-23 18:21 — Claude Opus 4.8 (implement) — Paso 1: `main.py` reescrito como
+  `App(tk.Tk)` con nav lateral 1–7 + Salir, área de contenido, carga perezosa/cacheada de
+  paneles, banner Windows-only para 1/2/3 y helper único de concurrencia `App.run_async`
+  (Thread + `after`). Módulos sin `build_panel` muestran "🚧 En construcción". Verificado:
+  `test_logica.py` → OK; `App()` construye/destruye sin excepción.

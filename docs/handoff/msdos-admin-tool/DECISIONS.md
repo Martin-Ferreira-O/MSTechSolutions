@@ -1,29 +1,45 @@
-> Handoff doc for task `msdos-admin-tool`. Author: Claude Opus 4.8. Updated: 2026-06-23 18:06.
+> Handoff doc for task `msdos-admin-tool`. Author: Claude Opus 4.8. Updated: 2026-06-23 18:11.
 > IMPLEMENTING AGENT: read CONTEXT.md → PLAN.md → PROGRESS.md → DECISIONS.md before starting.
 > Update PROGRESS.md after every meaningful change, and record any deviation from PLAN.md in DECISIONS.md.
-> Spec written by Claude Opus 4.8 against working tree (pre-initial-commit) on branch `msdos-admin-tool`; source plan: `~/.claude/plans/contexto-del-caso-la-cozy-valiant.md`. If HEAD has moved far past this, reconcile before trusting the spec.
+> Spec written by Claude Opus 4.8 against commit `c3f1708` on branch `msdos-admin-tool`; source plan: `~/.claude/plans/revisa-la-estructura-de-proud-candy.md`. If HEAD has moved far past this, reconcile before trusting the spec.
 
-# DECISIONS — msdos-admin-tool
+# DECISIONS — msdos-admin-tool (migración a menú GUI tkinter)
 
-## Decisiones tomadas
-- **Windows estricto + aviso (no fallback multiplataforma).** Confirmado con el usuario. Los
-  comandos DOS se ejecutan tal cual pide la consigna; en no-Windows se avisa en vez de romper.
-  Mantiene fiel "usar comandos MS-DOS" y evita código de sustitución.
-- **`run_dos` ejecuta vía `cmd /c <comando>`.** Necesario porque `dir`, `copy`, `del`, `mkdir`,
-  etc. son internos del intérprete, no ejecutables. Unifica internos y .exe en un solo wrapper.
-- **Manejo de errores centralizado en `run_dos`** (FileNotFoundError, returncode≠0, PermissionError,
-  TimeoutExpired, OSError) + `try/except` global por acción en `main.py`. Cubre los 5 casos de
-  la rúbrica (directorio/archivo/proceso inexistente, permisos, error de ejecución).
-- **Opción 6 es multiplataforma** (psutil), no Windows-only: `SOLO_WINDOWS = {1,2,3}`. El extra
-  `wmic` se muestra solo en Windows. (El plan mencionaba 6 como Windows-only en un punto; se
-  resolvió a favor de que funcione en cualquier SO, consistente con la verificación.)
-- **Fragmentación externa demostrable:** `particiones_variables` libera un proceso del medio sin
-  fusionar huecos adyacentes, para que la fragmentación externa sea visible (si no, sería 0).
-- **Tests solo de lógica pura** (m4/m5) con `assert`, sin framework. Los módulos de comandos DOS
-  no son testeables fuera de Windows; su verificación es smoke manual.
-- **Entrega = código + informes.** Confirmado con el usuario: se incluye `INFORME.md` (rúbrica) y
-  `m7_reporte.py` genera `REPORTE_ORG.md`.
+## Decisiones tomadas (esta iteración)
+- **Tecnología: tkinter GUI** (confirmado con el usuario, vs. menú TUI con flechas). tkinter
+  está en la stdlib de Python en el entorno de entrega (Windows) → sin dependencias nuevas.
+  `curses` se descartó porque no está en stdlib en Windows (requeriría `windows-curses`).
+- **Alcance: rediseño completo por módulo** (confirmado, vs. wrapper mínimo que redirige
+  `print()`). Se separa la lógica pura del I/O en cada `m_x` y se construyen paneles tkinter
+  propios, con **Treeview para CPU y memoria**. Más trabajo, pero UX pulida y módulos
+  testeables (la lógica queda como funciones que devuelven datos).
+- **Contrato `build_panel(parent) -> tk.Frame`** por módulo, con paneles creados
+  perezosamente y cacheados en el shell. Mantiene la regla de la rúbrica "un módulo por
+  sección".
+- **Concurrencia acotada a un helper `_run_async` (Thread + `widget.after`)** solo para las
+  llamadas lentas (`systeminfo`/`wmic`/`tasklist`). No se introduce cola ni pool: es
+  innecesario para llamadas puntuales.
+- **Lógica pura intacta:** `fcfs`/`sjf`/`round_robin`/`comparar` (m4) y
+  `particiones_fijas`/`particiones_variables` (m5) se reusan sin tocar, para que
+  `test_logica.py` siga pasando.
+- **Guard Windows sin cambios:** 1/2/3 siguen guardados por `es_windows()`; en otros SO el
+  panel muestra el aviso (no se sustituyen los comandos DOS).
+- **`.verify` = solo `python3 test_logica.py`.** El smoke de paneles (`smoke_build_all`)
+  necesita display y no es confiable headless, así que no entra en el gate automático del
+  Stop hook; queda como verificación manual/con display en el PLAN.
 
 ## Open questions for the spec author
-- Ninguna pendiente. (El código está implementado y verificado; el único trabajo restante es el
-  smoke en Windows, que depende del entorno de entrega, no de una decisión de diseño.)
+- Ninguna pendiente. Las dos decisiones de diseño grandes (tecnología y alcance) se
+  cerraron con el usuario antes de planificar.
+
+---
+
+## Historial — build de consola (iteración previa, completada en `c3f1708`)
+- Windows estricto + aviso (no fallback multiplataforma), confirmado con el usuario.
+- `run_dos` ejecuta vía `cmd /c <comando>` (unifica internos del intérprete y .exe).
+- Manejo de errores centralizado en `run_dos` + `try/except` global por acción.
+- Opción 6 multiplataforma (psutil); `wmic` extra solo en Windows. `SOLO_WINDOWS = {1,2,3}`.
+- `particiones_variables` libera un proceso del medio sin fusionar huecos → fragmentación
+  externa visible.
+- Tests solo de lógica pura (m4/m5) con `assert`, sin framework.
+- Entrega = código + informes (`INFORME.md` + `REPORTE_ORG.md` generado por m7).

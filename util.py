@@ -4,6 +4,7 @@ Centraliza el manejo de errores que pide la consigna (comando inexistente,
 código de salida distinto de 0, permisos insuficientes, timeouts) en un único
 lugar: run_dos(). El resto de los módulos no tocan subprocess directamente.
 """
+
 import getpass
 import platform
 import subprocess
@@ -17,6 +18,36 @@ def es_windows():
     return platform.system() == "Windows"
 
 
+def es_macos():
+    """True si el sistema operativo es macOS."""
+    return platform.system() == "Darwin"
+
+
+def run_shell(comando, timeout=30):
+    """Ejecuta un comando en bash (macOS/Linux) y devuelve (ok: bool, salida: str)."""
+    try:
+        r = subprocess.run(
+            ["bash", "-c", comando],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            errors="replace",
+        )
+    except FileNotFoundError:
+        return False, "Error: 'bash' no disponible."
+    except PermissionError:
+        return False, "Error: permisos insuficientes para ejecutar el comando."
+    except subprocess.TimeoutExpired:
+        return False, "Error: el comando excedió el tiempo de espera."
+    except OSError as e:
+        return False, f"Error de ejecución: {e}"
+
+    salida = ((r.stdout or "") + (r.stderr or "")).strip()
+    if r.returncode != 0:
+        return False, salida or f"Error: el comando terminó con código {r.returncode}."
+    return True, salida
+
+
 def run_dos(comando, timeout=30):
     """Ejecuta un comando MS-DOS y devuelve (ok: bool, salida: str).
 
@@ -27,7 +58,7 @@ def run_dos(comando, timeout=30):
     """
     try:
         r = subprocess.run(
-            ["cmd", "/c", comando],
+            f"cmd /c {comando}",
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -62,4 +93,4 @@ def log_bitacora(operacion, resultado):
 
 def gb(n_bytes):
     """Formatea bytes como GB legible."""
-    return f"{n_bytes / (1024 ** 3):.2f} GB"
+    return f"{n_bytes / (1024**3):.2f} GB"

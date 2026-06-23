@@ -20,14 +20,25 @@ _OPS = {
     "Renombrar archivo (rename)": ("Renombrar archivo", lambda a, b: f'rename "{a}" "{b}"', True),
     "Eliminar archivo (del)": ("Eliminar archivo", lambda a, b: f'del /Q "{a}"', False),
 }
-
-# Operación cuyo argumento puede ir vacío (lista el directorio actual).
 _OPCIONAL = "Listar contenido (dir)"
+
+_OPS_MACOS = {
+    "Crear directorio (mkdir)": ("Crear directorio", lambda a, b: f'mkdir -p "{a}"', False),
+    "Eliminar directorio (rm -rf)": ("Eliminar directorio", lambda a, b: f'rm -rf "{a}"', False),
+    "Crear archivo (touch)": ("Crear archivo", lambda a, b: f'touch "{a}"', False),
+    "Listar contenido (ls)": ("Listar contenido", lambda a, b: (f'ls -la "{a}"' if a else "ls -la"), False),
+    "Copiar archivo (cp)": ("Copiar archivo", lambda a, b: f'cp "{a}" "{b}"', True),
+    "Mover archivo (mv)": ("Mover archivo", lambda a, b: f'mv "{a}" "{b}"', True),
+    "Renombrar archivo (mv)": ("Renombrar archivo", lambda a, b: f'mv "{a}" "{b}"', True),
+    "Eliminar archivo (rm)": ("Eliminar archivo", lambda a, b: f'rm "{a}"', False),
+}
+_OPCIONAL_MACOS = "Listar contenido (ls)"
 
 
 def ejecutar(operacion, comando):
-    """Corre el comando MS-DOS, registra en bitácora y devuelve (ok, salida)."""
-    ok, salida = util.run_dos(comando)
+    """Corre el comando (MS-DOS o shell), registra en bitácora y devuelve (ok, salida)."""
+    runner = util.run_shell if util.es_macos() else util.run_dos
+    ok, salida = runner(comando)
     resultado = "OK" if ok else f"FALLO: {salida}"
     util.log_bitacora(operacion, resultado)
     return ok, salida
@@ -36,11 +47,13 @@ def ejecutar(operacion, comando):
 def build_panel(parent):
     """Panel tkinter del Módulo 2: selector de operación + campos + salida."""
     panel = tk.Frame(parent)
+    ops = _OPS_MACOS if util.es_macos() else _OPS
+    opcional = _OPCIONAL_MACOS if util.es_macos() else _OPCIONAL
 
     form = tk.Frame(panel)
     form.pack(fill="x", pady=4)
     tk.Label(form, text="Operación:").grid(row=0, column=0, sticky="e", padx=4, pady=2)
-    op = ttk.Combobox(form, values=list(_OPS), state="readonly", width=28)
+    op = ttk.Combobox(form, values=list(ops), state="readonly", width=28)
     op.current(0)
     op.grid(row=0, column=1, sticky="w", padx=4, pady=2)
 
@@ -59,7 +72,7 @@ def build_panel(parent):
     salida.pack(fill="both", expand=True, pady=4)
 
     def on_op(_evt=None):
-        usa_destino = _OPS[op.get()][2]
+        usa_destino = ops[op.get()][2]
         e2.config(state="normal" if usa_destino else "disabled")
         lbl2.config(fg="black" if usa_destino else "gray")
 
@@ -68,9 +81,9 @@ def build_panel(parent):
 
     def ejecutar_op():
         nombre = op.get()
-        etiqueta, builder, usa_destino = _OPS[nombre]
+        etiqueta, builder, usa_destino = ops[nombre]
         a, b = e1.get().strip(), e2.get().strip()
-        if not a and nombre != _OPCIONAL:
+        if not a and nombre != opcional:
             msg.config(text="Indique la ruta / origen.")
             return
         if usa_destino and not b:

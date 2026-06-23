@@ -7,8 +7,7 @@ con sus controles y su salida (texto o tabla).
 
 ## Requisitos
 - Python 3.8+
-- `psutil` (única dependencia externa; `tkinter` viene en la stdlib —
-  en Linux puede requerir el paquete de SO `python3-tk`, no en Windows)
+- `psutil` (única dependencia externa; `tkinter` viene en la stdlib)
 
 ```
 pip install -r requirements.txt

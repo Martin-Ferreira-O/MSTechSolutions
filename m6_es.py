@@ -46,11 +46,19 @@ def build_panel(parent):
         tv.column(col, width=w, anchor="center")
     tv.pack(fill="x", pady=4)
 
-    wmic_box = None
+    native_box = None
     if util.es_windows():
         tk.Label(panel, text="Comando MS-DOS: wmic logicaldisk", anchor="w").pack(fill="x")
-        wmic_box = ScrolledText(panel, height=8)
-        wmic_box.pack(fill="both", expand=True, pady=4)
+        native_box = ScrolledText(panel, height=8)
+        native_box.pack(fill="both", expand=True, pady=4)
+    elif util.es_macos():
+        tk.Label(panel, text="Comando macOS: df -H", anchor="w").pack(fill="x")
+        native_box = ScrolledText(panel, height=8)
+        native_box.pack(fill="both", expand=True, pady=4)
+
+    def _volcar_native(res):
+        native_box.delete("1.0", "end")
+        native_box.insert("end", res if isinstance(res, str) else f"[ERROR] {res}")
 
     def actualizar():
         for it in tv.get_children():
@@ -59,13 +67,16 @@ def build_panel(parent):
             tv.insert("", "end", values=(
                 u["device"], u["montaje"], u["fs"], util.gb(u["total"]),
                 f"{util.gb(u['usado'])} ({u['percent']}%)", util.gb(u["libre"])))
-        if wmic_box is not None:
-            wmic_box.delete("1.0", "end")
-            wmic_box.insert("end", "Consultando…")
-            panel.winfo_toplevel().run_async(
-                lambda: util.run_dos("wmic logicaldisk get caption,freespace,size")[1],
-                lambda res: (wmic_box.delete("1.0", "end"),
-                             wmic_box.insert("end", res if isinstance(res, str) else f"[ERROR] {res}")))
+        if native_box is not None:
+            native_box.delete("1.0", "end")
+            native_box.insert("end", "Consultando…")
+            if util.es_macos():
+                panel.winfo_toplevel().run_async(
+                    lambda: util.run_shell("df -H")[1], _volcar_native)
+            else:
+                panel.winfo_toplevel().run_async(
+                    lambda: util.run_dos("wmic logicaldisk get caption,freespace,size")[1],
+                    _volcar_native)
 
     actualizar()
     return panel

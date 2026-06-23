@@ -10,12 +10,20 @@ import util
 
 def listar():
     """Lista todos los procesos activos. Devuelve texto."""
-    _, salida = util.run_dos("tasklist")
+    if util.es_macos():
+        _, salida = util.run_shell("ps aux")
+    else:
+        _, salida = util.run_dos("tasklist")
     return salida
 
 
 def buscar(nombre):
-    """Busca procesos por nombre (filtro nativo, con fallback manual). Devuelve texto."""
+    """Busca procesos por nombre. Devuelve texto."""
+    if util.es_macos():
+        _, salida = util.run_shell(f"ps aux | grep -i '{nombre}' | grep -v grep")
+        if not salida:
+            salida = "No se encontraron procesos."
+        return salida
     ok, salida = util.run_dos(f'tasklist /FI "IMAGENAME eq {nombre}*"')
     if not ok or nombre.lower() not in salida.lower():
         _, todo = util.run_dos("tasklist")
@@ -25,7 +33,13 @@ def buscar(nombre):
 
 
 def finalizar(criterio):
-    """Finaliza un proceso por PID o nombre.exe. Devuelve texto."""
+    """Finaliza un proceso por PID o nombre. Devuelve texto."""
+    if util.es_macos():
+        if criterio.isdigit():
+            _, salida = util.run_shell(f"kill -9 {criterio}")
+        else:
+            _, salida = util.run_shell(f"pkill -f '{criterio}'")
+        return salida or "Comando ejecutado."
     flag = "/PID" if criterio.isdigit() else "/IM"
     _, salida = util.run_dos(f"taskkill {flag} {criterio} /F")
     return salida

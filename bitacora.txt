@@ -1,0 +1,1 @@
+2026-06-23	19:07:29	martin	Crear directorio	FALLO: mkdir: /home/martin: Operation not supported

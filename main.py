@@ -74,7 +74,7 @@ class App(tk.Tk):
         tk.Label(frame, text=etiqueta, font=("TkDefaultFont", 14, "bold"),
                  anchor="w").pack(fill="x", padx=12, pady=(12, 4))
 
-        if num in SOLO_WINDOWS and not util.es_windows():
+        if num in SOLO_WINDOWS and not util.es_windows() and not util.es_macos():
             tk.Label(frame, bg="#f9e79f", anchor="w", justify="left", wraplength=700,
                      text=(f"[AVISO] La opción {num} usa comandos MS-DOS y requiere "
                            f"Windows. Sistema actual: {platform.system()} — los comandos "

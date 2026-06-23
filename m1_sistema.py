@@ -1,6 +1,7 @@
 """Módulo 1: Información y Estructura del Sistema Operativo.
 
 Usa los comandos MS-DOS: ver, systeminfo, hostname, whoami.
+En macOS: sw_vers, hostname, whoami, uname -m.
 """
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
@@ -29,6 +30,20 @@ def _parse_systeminfo(texto):
     return res
 
 
+def _parse_sw_vers(texto):
+    """Extrae ProductName y ProductVersion de la salida de `sw_vers`."""
+    res = {}
+    for linea in texto.splitlines():
+        if ":" in linea:
+            clave, val = linea.split(":", 1)
+            clave, val = clave.strip(), val.strip()
+            if clave == "ProductName":
+                res["so"] = val
+            elif clave == "ProductVersion":
+                res["version"] = val
+    return res
+
+
 def build_panel(parent):
     """Panel tkinter del Módulo 1: consulta async + resumen + salida cruda."""
     panel = tk.Frame(parent)
@@ -53,11 +68,18 @@ def build_panel(parent):
         btn.config(state="disabled", text="Consultando… (systeminfo puede tardar)")
 
         def trabajo():
-            _, ver = util.run_dos("ver")
-            _, host = util.run_dos("hostname")
-            _, user = util.run_dos("whoami")
-            _, info = util.run_dos("systeminfo", timeout=60)
-            return ver, host, user, info
+            if util.es_macos():
+                _, ver  = util.run_shell("sw_vers")
+                _, host = util.run_shell("hostname")
+                _, user = util.run_shell("whoami")
+                _, arch = util.run_shell("uname -m")
+                return ver, host, user, arch, True
+            else:
+                _, ver  = util.run_dos("ver")
+                _, host = util.run_dos("hostname")
+                _, user = util.run_dos("whoami")
+                _, info = util.run_dos("systeminfo", timeout=60)
+                return ver, host, user, info, False
 
         def listo(res):
             btn.config(state="normal", text="Consultar")
@@ -65,15 +87,27 @@ def build_panel(parent):
             if isinstance(res, Exception):
                 txt.insert("end", f"[ERROR] {res}")
                 return
-            ver, host, user, info = res
-            r = _parse_systeminfo(info)
-            vals["Nombre del SO"].config(text=r.get("so", "?"))
-            vals["Versión"].config(text=r.get("version", "?"))
-            vals["Nombre del equipo"].config(text=host or r.get("equipo", "?"))
-            vals["Usuario activo"].config(text=user or "?")
-            vals["Arquitectura"].config(text=r.get("arch", "?"))
-            txt.insert("end", f"[ver]\n{ver}\n\n[hostname]\n{host}\n\n"
-                              f"[whoami]\n{user}\n\n[systeminfo]\n{info}")
+            *datos, es_mac = res
+            if es_mac:
+                ver, host, user, arch = datos
+                r = _parse_sw_vers(ver)
+                vals["Nombre del SO"].config(text=r.get("so", "macOS"))
+                vals["Versión"].config(text=r.get("version", "?"))
+                vals["Nombre del equipo"].config(text=host or "?")
+                vals["Usuario activo"].config(text=user or "?")
+                vals["Arquitectura"].config(text=arch or "?")
+                txt.insert("end", f"[sw_vers]\n{ver}\n\n[hostname]\n{host}\n\n"
+                                  f"[whoami]\n{user}\n\n[uname -m]\n{arch}")
+            else:
+                ver, host, user, info = datos
+                r = _parse_systeminfo(info)
+                vals["Nombre del SO"].config(text=r.get("so", "?"))
+                vals["Versión"].config(text=r.get("version", "?"))
+                vals["Nombre del equipo"].config(text=host or r.get("equipo", "?"))
+                vals["Usuario activo"].config(text=user or "?")
+                vals["Arquitectura"].config(text=r.get("arch", "?"))
+                txt.insert("end", f"[ver]\n{ver}\n\n[hostname]\n{host}\n\n"
+                                  f"[whoami]\n{user}\n\n[systeminfo]\n{info}")
 
         panel.winfo_toplevel().run_async(trabajo, listo)
 
